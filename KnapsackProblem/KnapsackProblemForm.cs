@@ -138,7 +138,7 @@ namespace KnapsackProblem
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void button4_Click(object sender, EventArgs e)
+        private void addItem_Click(object sender, EventArgs e)
         {
             object[] array = {numericUpDown1.Value, numericUpDown4.Value};
             dataGridView1.Rows.Add(array);
