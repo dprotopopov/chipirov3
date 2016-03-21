@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -142,6 +143,71 @@ namespace KnapsackProblem
         {
             object[] array = {numericUpDown1.Value, numericUpDown4.Value};
             dataGridView1.Rows.Add(array);
+        }
+
+        private void branchesAndBounds_Click(object sender, EventArgs e)
+        {
+            var capacity = (double)numericUpDownCapacity.Value;
+            var weights = new double[dataGridView1.Rows.Count];
+            var prices = new double[dataGridView1.Rows.Count];
+            var foundPrice = 0.0;
+            var mutex = new Mutex();
+
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                weights[index] = Convert.ToDouble(dataGridView1[0, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[1, index].EditedFormattedValue);
+            }
+
+            var list = new List<BranchesAndBoundsPlan>();
+            var zero = new BranchesAndBoundsPlan();
+            zero.MinWeight = 0;
+            zero.MaxWeight = weights.Sum();
+            zero.MinWeight = 0;
+            zero.MaxPrice = prices.Sum();
+            list.Add(zero);
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                foundPrice = list.Select(i => i.MinPrice).Max();
+                var list1 = new List<BranchesAndBoundsPlan>();
+                Parallel.ForEach(list, item =>
+                {
+                    var a = new BranchesAndBoundsPlan();
+                    foreach (var pair in item.bools)
+                    {
+                        a.bools.Add(pair.Key, pair.Value);
+                    }
+                    a.bools.Add(index, false);
+                    a.MaxWeight = item.MaxWeight - weights[index];
+                    a.MaxPrice = item.MaxPrice - prices[index];
+                    a.MinWeight = item.MinWeight;
+                    a.MinPrice = item.MinPrice;
+                    if (a.MaxPrice > foundPrice) list1.Add(a);
+
+                    var b = new BranchesAndBoundsPlan();
+                    foreach (var pair in item.bools)
+                    {
+                        b.bools.Add(pair.Key, pair.Value);
+                    }
+                    b.bools.Add(index, true);
+                    b.MaxWeight = item.MaxWeight;
+                    b.MaxPrice = item.MaxPrice;
+                    b.MinWeight = item.MinWeight + weights[index];
+                    b.MinPrice = item.MinPrice + prices[index];
+                    if (b.MinWeight <= capacity) list1.Add(b);
+                });
+                foundPrice = list1.Select(i => i.MinPrice).Max();
+                list = list1.Where(i => i.MaxPrice >= foundPrice).ToList();
+            }
+            if (!list.Any()) return;
+            foundPrice = list.Select(i => i.MinPrice).Max();
+            var z = list.First(i => i.MinPrice == foundPrice);
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                dataGridView1[2, index].Value = z.bools[index];
+            }
+            UpdateTotal();
+
         }
     }
 }
