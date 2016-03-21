@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -77,8 +78,16 @@ namespace TravelingSalesmanProblem
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        private bool IsCyclic(Dictionary<string, string> map)
+        private bool IsCyclic(IList<string> sources, IList<string> destinations)
         {
+            Debug.Assert(sources.Count == destinations.Count);
+
+            var map = new Dictionary<string, string>();
+            for (var index = 0; index < sources.Count; index++)
+            {
+                if (map.ContainsKey(sources[index])) return false; // в цикле все точки отправления уникальные
+                map.Add(sources[index], destinations[index]);
+            }
             var item = map.Keys.First();
             var list = new List<string>();
             for (var j = 0; j < map.Count; j++)
@@ -132,14 +141,16 @@ namespace TravelingSalesmanProblem
                 if (count != cities.Count) return;
 
                 var index = 0;
-                var map = new Dictionary<string, string>();
+                var s = new List<string>();
+                var d = new List<string>();
+
                 for (var j = bits; j > 0; j >>= 1, index++)
                 {
                     if ((j & 1) == 0) continue;
-                    if (map.ContainsKey(sources[index])) return; // в цикле все точки отправления уникальные
-                    map.Add(sources[index], destinations[index]);
+                    s.Add(sources[index]);
+                    d.Add(destinations[index]);
                 }
-                if (!IsCyclic(map)) return; // проверка что цикл
+                if (!IsCyclic(s, d)) return; // проверка что цикл
 
                 index = 0;
                 for (var j = bits; j > 0; j >>= 1, index++)
@@ -174,6 +185,98 @@ namespace TravelingSalesmanProblem
         {
             object[] array = {textBox1.Text, textBox2.Text, numericUpDown4.Value};
             dataGridView1.Rows.Add(array);
+        }
+
+        private void branchesAndBounds_Click(object sender, EventArgs e)
+        {
+            var sources = new string[dataGridView1.Rows.Count];
+            var destinations = new string[dataGridView1.Rows.Count];
+            var prices = new double[dataGridView1.Rows.Count];
+            var foundPrice = double.MaxValue;
+            var mutex = new Mutex();
+            var cities = new List<string>();
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
+                destinations[index] = Convert.ToString(dataGridView1[1, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[2, index].EditedFormattedValue);
+                cities.Add(sources[index]);
+                cities.Add(destinations[index]);
+            }
+            cities = cities.Distinct().ToList();
+            var list = new List<BranchesAndBoundsPlan>();
+            var list2 = new List<BranchesAndBoundsPlan>();
+            var zero = new BranchesAndBoundsPlan
+            {
+                MinCount = 0,
+                MinPrice = 0,
+                MaxCount = dataGridView1.Rows.Count,
+                MaxPrice = prices.Sum()
+            };
+            list.Add(zero);
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                var list1 = new List<BranchesAndBoundsPlan>();
+                Parallel.ForEach(list, item =>
+                {
+                    var s = new List<string>();
+                    var d = new List<string>();
+
+                    for (var j = 0; j < dataGridView1.Rows.Count; j++)
+                    {
+                        if (item.bools.ContainsKey(j) && item.bools[j])
+                        {
+                            s.Add(sources[j]);
+                            d.Add(destinations[j]);                           
+                        }
+                    }
+                    if (s.Count == cities.Count && IsCyclic(s, d))
+                    {
+                        var price = 0.0;
+                        for (var j = 0; j < dataGridView1.Rows.Count; j++)
+                            if (item.bools.ContainsKey(j) && item.bools[j])
+                                price += prices[j];
+                        mutex.WaitOne();
+                        foundPrice = Math.Min(foundPrice, price);
+                        mutex.ReleaseMutex();
+                        list2.Add(item);
+                    }
+                    else
+                    {
+                        var a = new BranchesAndBoundsPlan();
+                        foreach (var pair in item.bools)
+                        {
+                            a.bools.Add(pair.Key, pair.Value);
+                        }
+                        a.bools.Add(index, false);
+                        a.MaxCount = item.MaxCount - 1;
+                        a.MinCount = item.MinCount;
+                        a.MaxPrice = item.MaxPrice - prices[index];
+                        a.MinPrice = item.MinPrice;
+                        if (a.MaxCount >= cities.Count) list1.Add(a);
+
+                        var b = new BranchesAndBoundsPlan();
+                        foreach (var pair in item.bools)
+                        {
+                            b.bools.Add(pair.Key, pair.Value);
+                        }
+                        b.bools.Add(index, true);
+                        b.MaxCount = item.MaxCount;
+                        b.MinCount = item.MinCount + 1;
+                        b.MaxPrice = item.MaxPrice;
+                        b.MinPrice = item.MinPrice + prices[index];
+                        if (b.MinCount <= cities.Count) list1.Add(b);
+                    }
+                });
+                list = list1.Where(i => i.MinPrice <= foundPrice).ToList();
+            }
+            if (!list2.Any()) return;
+            var z = list2.First(i => Math.Abs(i.MinPrice - foundPrice) < 0.001);
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                dataGridView1[3, index].Value = z.bools.ContainsKey(index) && z.bools[index];
+            }
+            UpdateTotal();
         }
     }
 }

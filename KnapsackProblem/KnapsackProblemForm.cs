@@ -151,7 +151,6 @@ namespace KnapsackProblem
             var weights = new double[dataGridView1.Rows.Count];
             var prices = new double[dataGridView1.Rows.Count];
             var foundPrice = 0.0;
-            var mutex = new Mutex();
 
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
@@ -162,8 +161,8 @@ namespace KnapsackProblem
             var list = new List<BranchesAndBoundsPlan>();
             var zero = new BranchesAndBoundsPlan();
             zero.MinWeight = 0;
+            zero.MinPrice = 0;
             zero.MaxWeight = weights.Sum();
-            zero.MinWeight = 0;
             zero.MaxPrice = prices.Sum();
             list.Add(zero);
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
@@ -182,7 +181,7 @@ namespace KnapsackProblem
                     a.MaxPrice = item.MaxPrice - prices[index];
                     a.MinWeight = item.MinWeight;
                     a.MinPrice = item.MinPrice;
-                    if (a.MaxPrice > foundPrice) list1.Add(a);
+                    if (a.MaxPrice >= foundPrice) list1.Add(a);
 
                     var b = new BranchesAndBoundsPlan();
                     foreach (var pair in item.bools)

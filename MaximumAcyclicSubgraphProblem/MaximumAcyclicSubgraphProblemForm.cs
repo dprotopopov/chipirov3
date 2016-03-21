@@ -78,14 +78,14 @@ namespace MaximumAcyclicSubgraphProblem
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        static public bool IsAcyclic(IList<string> sources, IList<string> destinations)
+        public static bool IsAcyclic(IList<string> sources, IList<string> destinations)
         {
-            Debug.Assert(sources.Count==destinations.Count);
+            Debug.Assert(sources.Count == destinations.Count);
             for (var list = sources.Distinct().Except(destinations.Distinct());
                 list.Any();
                 list = sources.Distinct().Except(destinations.Distinct()))
             {
-                for(var i=sources.Count;i-->0;)
+                for (var i = sources.Count; i-- > 0;)
                 {
                     if (!list.Contains(sources[i])) continue;
                     // Удаляем ребра с вершинами в истоках
@@ -123,7 +123,7 @@ namespace MaximumAcyclicSubgraphProblem
             }
 
             // Вычисляем параллельно для всех комбинаций элементов
-            Parallel.For(1L, 1L << dataGridView1.Rows.Count, bits =>
+            Parallel.For(0L, 1L << dataGridView1.Rows.Count, bits =>
             {
                 // Каждый бит отвечает за использование ориентированного ребра графа
                 var price = 0.0;
@@ -136,16 +136,12 @@ namespace MaximumAcyclicSubgraphProblem
                     s.Add(sources[index]);
                     d.Add(destinations[index]);
                 }
-                if (!IsAcyclic(s,d)) return; // проверка графа на ацикличность
+                if (!IsAcyclic(s, d)) return; // проверка графа на ацикличность
 
                 index = 0;
                 for (var j = bits; j > 0; j >>= 1, index++)
-                {
                     if ((j & 1) == 1)
-                    {
                         price += prices[index];
-                    }
-                }
                 mutex.WaitOne();
                 if (price < foundPrice)
                 {
@@ -171,6 +167,84 @@ namespace MaximumAcyclicSubgraphProblem
         {
             object[] array = {numericUpDown1.Value, numericUpDown2.Value, numericUpDown4.Value};
             dataGridView1.Rows.Add(array);
+        }
+
+        private void branchesAndBounds_Click(object sender, EventArgs e)
+        {
+            var sources = new string[dataGridView1.Rows.Count];
+            var destinations = new string[dataGridView1.Rows.Count];
+            var prices = new double[dataGridView1.Rows.Count];
+            var foundPrice = double.MaxValue;
+            var mutex = new Mutex();
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
+                destinations[index] = Convert.ToString(dataGridView1[1, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[2, index].EditedFormattedValue);
+            }
+            var list = new List<BranchesAndBoundsPlan>();
+            var list2 = new List<BranchesAndBoundsPlan>();
+            var zero = new BranchesAndBoundsPlan();
+            zero.MinPrice = 0;
+            zero.MaxPrice = prices.Sum();
+            list.Add(zero);
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                var list1 = new List<BranchesAndBoundsPlan>();
+                Parallel.ForEach(list, item =>
+                {
+                    var s = new List<string>();
+                    var d = new List<string>();
+
+                    for (var j = 0; j < dataGridView1.Rows.Count; j++)
+                    {
+                        if (item.bools.ContainsKey(j) && item.bools[j]) continue;
+                        s.Add(sources[j]);
+                        d.Add(destinations[j]);
+                    }
+                    if (IsAcyclic(s, d))
+                    {
+                        var price = 0.0;
+                        for (var j = 0; j < dataGridView1.Rows.Count; j++)
+                            if (item.bools.ContainsKey(j) && item.bools[j])
+                                price += prices[j];
+                        mutex.WaitOne();
+                        foundPrice = Math.Min(foundPrice, price);
+                        mutex.ReleaseMutex();
+                        list2.Add(item);
+                    }
+                    else
+                    {
+                        var a = new BranchesAndBoundsPlan();
+                        foreach (var pair in item.bools)
+                        {
+                            a.bools.Add(pair.Key, pair.Value);
+                        }
+                        a.bools.Add(index, false);
+                        a.MaxPrice = item.MaxPrice - prices[index];
+                        a.MinPrice = item.MinPrice;
+                        list1.Add(a);
+
+                        var b = new BranchesAndBoundsPlan();
+                        foreach (var pair in item.bools)
+                        {
+                            b.bools.Add(pair.Key, pair.Value);
+                        }
+                        b.bools.Add(index, true);
+                        b.MaxPrice = item.MaxPrice;
+                        b.MinPrice = item.MinPrice + prices[index];
+                        list1.Add(b);
+                    }
+                });
+                list = list1.Where(i => i.MinPrice <= foundPrice).ToList();
+            }
+            if (!list2.Any()) return;
+            var z = list2.First(i => Math.Abs(i.MinPrice - foundPrice) < 0.001);
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                dataGridView1[3, index].Value = z.bools.ContainsKey(index) && z.bools[index];
+            }
+            UpdateTotal();
         }
     }
 }

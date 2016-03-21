@@ -29,6 +29,10 @@
         private void InitializeComponent()
         {
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Price = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Column3 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.label2 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
@@ -39,12 +43,9 @@
             this.button3 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.numericUpDown4 = new System.Windows.Forms.NumericUpDown();
-            this.Column1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Price = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Column3 = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
@@ -67,6 +68,26 @@
             this.dataGridView1.Size = new System.Drawing.Size(653, 347);
             this.dataGridView1.TabIndex = 2;
             this.dataGridView1.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellValueChanged);
+            // 
+            // Column1
+            // 
+            this.Column1.HeaderText = "Исток";
+            this.Column1.Name = "Column1";
+            // 
+            // Column2
+            // 
+            this.Column2.HeaderText = "Сток";
+            this.Column2.Name = "Column2";
+            // 
+            // Price
+            // 
+            this.Price.HeaderText = "Цена";
+            this.Price.Name = "Price";
+            // 
+            // Column3
+            // 
+            this.Column3.HeaderText = "Вкл";
+            this.Column3.Name = "Column3";
             // 
             // label2
             // 
@@ -164,26 +185,6 @@
             this.numericUpDown4.Size = new System.Drawing.Size(136, 26);
             this.numericUpDown4.TabIndex = 14;
             // 
-            // Column1
-            // 
-            this.Column1.HeaderText = "Исток";
-            this.Column1.Name = "Column1";
-            // 
-            // Column2
-            // 
-            this.Column2.HeaderText = "Сток";
-            this.Column2.Name = "Column2";
-            // 
-            // Price
-            // 
-            this.Price.HeaderText = "Цена";
-            this.Price.Name = "Price";
-            // 
-            // Column3
-            // 
-            this.Column3.HeaderText = "Вкл";
-            this.Column3.Name = "Column3";
-            // 
             // numericUpDown1
             // 
             this.numericUpDown1.Location = new System.Drawing.Point(233, 413);
@@ -198,11 +199,22 @@
             this.numericUpDown2.Size = new System.Drawing.Size(120, 26);
             this.numericUpDown2.TabIndex = 17;
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(984, 262);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(120, 75);
+            this.button5.TabIndex = 19;
+            this.button5.Text = "Ветви и границы";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.branchesAndBounds_Click);
+            // 
             // MaximumAcyclicSubgraphProblemForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1149, 565);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.numericUpDown2);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.button4);
@@ -245,6 +257,7 @@
         private System.Windows.Forms.DataGridViewCheckBoxColumn Column3;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.NumericUpDown numericUpDown2;
+        private System.Windows.Forms.Button button5;
     }
 }
 
