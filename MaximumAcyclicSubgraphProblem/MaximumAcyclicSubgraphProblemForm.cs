@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace KnapsackProblem
+namespace MaximumAcyclicSubgraphProblem
 {
-    public partial class KnapsackProblemForm : Form
+    public partial class MaximumAcyclicSubgraphProblemForm : Form
     {
-        public KnapsackProblemForm()
+        public MaximumAcyclicSubgraphProblemForm()
         {
             InitializeComponent();
         }
@@ -21,17 +23,14 @@ namespace KnapsackProblem
 
         private void UpdateTotal()
         {
-            var totalWeight = 0.0;
             var totalPrice = 0.0;
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
-                if ((bool) dataGridView1[2, index].EditedFormattedValue)
+                if ((bool) dataGridView1[3, index].EditedFormattedValue)
                 {
-                    totalWeight += Convert.ToDouble(dataGridView1[0, index].EditedFormattedValue);
-                    totalPrice += Convert.ToDouble(dataGridView1[1, index].EditedFormattedValue);
+                    totalPrice += Convert.ToDouble(dataGridView1[2, index].EditedFormattedValue);
                 }
             }
-            numericUpDown2.Value = (decimal) totalWeight;
             numericUpDown3.Value = (decimal) totalPrice;
         }
 
@@ -45,11 +44,11 @@ namespace KnapsackProblem
             if (saveFileDialog1.ShowDialog() != DialogResult.OK) return;
             using (var writer = File.CreateText(saveFileDialog1.FileName))
             {
-                writer.WriteLine(numericUpDownCapacity.Value);
                 for (var index = 0; index < dataGridView1.Rows.Count; index++)
                 {
                     writer.WriteLine(dataGridView1[0, index].EditedFormattedValue + ";" +
-                                     dataGridView1[1, index].EditedFormattedValue);
+                                     dataGridView1[1, index].EditedFormattedValue + ";" +
+                                     dataGridView1[2, index].EditedFormattedValue);
                 }
             }
         }
@@ -65,7 +64,6 @@ namespace KnapsackProblem
             using (var reader = File.OpenText(openFileDialog1.FileName))
             {
                 dataGridView1.Rows.Clear();
-                numericUpDownCapacity.Value = Convert.ToDecimal(reader.ReadLine());
                 for (var line = reader.ReadLine(); line != null; line = reader.ReadLine())
                 {
                     var array = line.Split(';').Cast<object>().ToArray();
@@ -76,23 +74,46 @@ namespace KnapsackProblem
         }
 
         /// <summary>
-        /// Нахождение решения полным перебором
+        ///     Провека графа на ацикличность
+        /// </summary>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        static public bool IsAcyclic(IList<string> sources, IList<string> destinations)
+        {
+            Debug.Assert(sources.Count==destinations.Count);
+            for (var list = sources.Distinct().Except(destinations.Distinct());
+                list.Any();
+                list = sources.Distinct().Except(destinations.Distinct()))
+            {
+                for(var i=sources.Count;i-->0;)
+                {
+                    if (!list.Contains(sources[i])) continue;
+                    // Удаляем ребра с вершинами в истоках
+                    sources.RemoveAt(i);
+                    destinations.RemoveAt(i);
+                }
+            }
+            return sources.Count == 0;
+        }
+
+        /// <summary>
+        ///     Нахождение решения полным перебором
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void bruteForce_Click(object sender, EventArgs e)
         {
-            var capacity = (double) numericUpDownCapacity.Value;
-            var weights = new double[dataGridView1.Rows.Count];
+            var sources = new string[dataGridView1.Rows.Count];
+            var destinations = new string[dataGridView1.Rows.Count];
             var prices = new double[dataGridView1.Rows.Count];
-            var foundPrice = 0.0;
+            var foundPrice = double.MaxValue;
             var foundIndex = 0L;
             var mutex = new Mutex();
-
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
-                weights[index] = Convert.ToDouble(dataGridView1[0, index].EditedFormattedValue);
-                prices[index] = Convert.ToDouble(dataGridView1[1, index].EditedFormattedValue);
+                sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
+                destinations[index] = Convert.ToString(dataGridView1[1, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[2, index].EditedFormattedValue);
             }
 
             if (dataGridView1.Rows.Count > 30)
@@ -104,21 +125,29 @@ namespace KnapsackProblem
             // Вычисляем параллельно для всех комбинаций элементов
             Parallel.For(1L, 1L << dataGridView1.Rows.Count, bits =>
             {
-                var weight = 0.0;
+                // Каждый бит отвечает за использование ориентированного ребра графа
                 var price = 0.0;
+                var s = new List<string>();
+                var d = new List<string>();
                 var index = 0;
-                for (var j = bits; j > 0; j >>= 1)
+                for (var j = bits; index < dataGridView1.Rows.Count; j >>= 1, index++)
+                {
+                    if ((j & 1) == 1) continue;
+                    s.Add(sources[index]);
+                    d.Add(destinations[index]);
+                }
+                if (!IsAcyclic(s,d)) return; // проверка графа на ацикличность
+
+                index = 0;
+                for (var j = bits; j > 0; j >>= 1, index++)
                 {
                     if ((j & 1) == 1)
                     {
-                        weight += weights[index];
                         price += prices[index];
                     }
-                    index++;
                 }
-                if (weight > capacity) return;
                 mutex.WaitOne();
-                if (price >= foundPrice)
+                if (price < foundPrice)
                 {
                     foundPrice = price;
                     foundIndex = bits;
@@ -128,19 +157,19 @@ namespace KnapsackProblem
 
             for (var index = 0; index < dataGridView1.Rows.Count; index++, foundIndex >>= 1)
             {
-                dataGridView1[2, index].Value = ((foundIndex & 1) == 1);
+                dataGridView1[3, index].Value = ((foundIndex & 1) == 1);
             }
             UpdateTotal();
         }
 
         /// <summary>
-        /// Добавление одного предмета указанного веса и цены
+        ///     Добавление одного предмета указанного веса и цены
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void addItem_Click(object sender, EventArgs e)
         {
-            object[] array = {numericUpDown1.Value, numericUpDown4.Value};
+            object[] array = {numericUpDown1.Value, numericUpDown2.Value, numericUpDown4.Value};
             dataGridView1.Rows.Add(array);
         }
     }

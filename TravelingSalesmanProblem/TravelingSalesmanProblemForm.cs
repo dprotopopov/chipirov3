@@ -73,11 +73,11 @@ namespace TravelingSalesmanProblem
         }
 
         /// <summary>
-        ///     Провека на простой цикл
+        ///     Провека графа на простой цикл
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        private bool IsCircle(Dictionary<string, string> map)
+        private bool IsCyclic(Dictionary<string, string> map)
         {
             var item = map.Keys.First();
             var list = new List<string>();
@@ -98,8 +98,8 @@ namespace TravelingSalesmanProblem
             var sources = new string[dataGridView1.Rows.Count];
             var destinations = new string[dataGridView1.Rows.Count];
             var prices = new double[dataGridView1.Rows.Count];
-            var foundedPrice = double.MaxValue;
-            var foundedIndex = 0L;
+            var foundPrice = double.MaxValue;
+            var foundIndex = 0L;
             var mutex = new Mutex();
             var cities = new List<string>();
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
@@ -119,7 +119,7 @@ namespace TravelingSalesmanProblem
             }
 
             // Вычисляем параллельно для всех комбинаций элементов
-            Parallel.For(0L, 1L << dataGridView1.Rows.Count, bits =>
+            Parallel.For(1L, 1L << dataGridView1.Rows.Count, bits =>
             {
                 // Каждый бит отвечает за использование ориентированного ребра графа
                 var price = 0.0;
@@ -139,7 +139,7 @@ namespace TravelingSalesmanProblem
                     if (map.ContainsKey(sources[index])) return; // в цикле все точки отправления уникальные
                     map.Add(sources[index], destinations[index]);
                 }
-                if (!IsCircle(map)) return; // проверка что цикл
+                if (!IsCyclic(map)) return; // проверка что цикл
 
                 index = 0;
                 for (var j = bits; j > 0; j >>= 1, index++)
@@ -150,17 +150,17 @@ namespace TravelingSalesmanProblem
                     }
                 }
                 mutex.WaitOne();
-                if (price < foundedPrice)
+                if (price < foundPrice)
                 {
-                    foundedPrice = price;
-                    foundedIndex = bits;
+                    foundPrice = price;
+                    foundIndex = bits;
                 }
                 mutex.ReleaseMutex();
             });
 
-            for (var index = 0; index < dataGridView1.Rows.Count; index++, foundedIndex >>= 1)
+            for (var index = 0; index < dataGridView1.Rows.Count; index++, foundIndex >>= 1)
             {
-                dataGridView1[3, index].Value = ((foundedIndex & 1) == 1);
+                dataGridView1[3, index].Value = ((foundIndex & 1) == 1);
             }
             UpdateTotal();
         }

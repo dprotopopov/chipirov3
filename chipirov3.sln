@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KnapsackProblem", "Knapsack
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravelingSalesmanProblem", "TravelingSalesmanProblem\TravelingSalesmanProblem.csproj", "{2009CD1A-1DD3-426C-8E3B-72D0A3F2F5BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaximumAcyclicSubgraphProblem", "MaximumAcyclicSubgraphProblem\MaximumAcyclicSubgraphProblem.csproj", "{CA1BABC9-640E-4901-AE79-F19734D3D949}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaximumAcyclicSubgraphProblem.UnitTest", "MaximumAcyclicSubgraphProblem.UnitTest\MaximumAcyclicSubgraphProblem.UnitTest.csproj", "{17D920EF-3B79-4290-912E-53C4F67C5B2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{2009CD1A-1DD3-426C-8E3B-72D0A3F2F5BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2009CD1A-1DD3-426C-8E3B-72D0A3F2F5BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2009CD1A-1DD3-426C-8E3B-72D0A3F2F5BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA1BABC9-640E-4901-AE79-F19734D3D949}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA1BABC9-640E-4901-AE79-F19734D3D949}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA1BABC9-640E-4901-AE79-F19734D3D949}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA1BABC9-640E-4901-AE79-F19734D3D949}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17D920EF-3B79-4290-912E-53C4F67C5B2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17D920EF-3B79-4290-912E-53C4F67C5B2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17D920EF-3B79-4290-912E-53C4F67C5B2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17D920EF-3B79-4290-912E-53C4F67C5B2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
