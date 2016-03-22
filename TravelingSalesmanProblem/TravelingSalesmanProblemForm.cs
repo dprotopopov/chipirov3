@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -76,7 +77,6 @@ namespace TravelingSalesmanProblem
         /// <summary>
         ///     Провека графа на простой цикл
         /// </summary>
-        /// <param name="map"></param>
         /// <returns></returns>
         private bool IsCyclic(IList<string> sources, IList<string> destinations)
         {
@@ -174,6 +174,7 @@ namespace TravelingSalesmanProblem
                 dataGridView1[3, index].Value = ((foundIndex & 1) == 1);
             }
             UpdateTotal();
+            SystemSounds.Beep.Play();
         }
 
         /// <summary>
@@ -189,13 +190,14 @@ namespace TravelingSalesmanProblem
 
         private void branchesAndBounds_Click(object sender, EventArgs e)
         {
-            var sources = new string[dataGridView1.Rows.Count];
-            var destinations = new string[dataGridView1.Rows.Count];
-            var prices = new double[dataGridView1.Rows.Count];
+            var count = dataGridView1.Rows.Count;
+            var sources = new string[count];
+            var destinations = new string[count];
+            var prices = new double[count];
             var foundPrice = double.MaxValue;
             var mutex = new Mutex();
             var cities = new List<string>();
-            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            for (var index = 0; index < count; index++)
             {
                 sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
                 destinations[index] = Convert.ToString(dataGridView1[1, index].EditedFormattedValue);
@@ -214,7 +216,7 @@ namespace TravelingSalesmanProblem
                 MaxPrice = prices.Sum()
             };
             list.Add(zero);
-            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            for (var index = 0; index < count; index++)
             {
                 var list1 = new List<BranchesAndBoundsPlan>();
                 Parallel.ForEach(list, item =>
@@ -222,7 +224,7 @@ namespace TravelingSalesmanProblem
                     var s = new List<string>();
                     var d = new List<string>();
 
-                    for (var j = 0; j < dataGridView1.Rows.Count; j++)
+                    for (var j = 0; j < count; j++)
                     {
                         if (item.bools.ContainsKey(j) && item.bools[j])
                         {
@@ -238,8 +240,8 @@ namespace TravelingSalesmanProblem
                                 price += prices[j];
                         mutex.WaitOne();
                         foundPrice = Math.Min(foundPrice, price);
-                        mutex.ReleaseMutex();
                         list2.Add(item);
+                        mutex.ReleaseMutex();
                     }
                     else
                     {
@@ -253,7 +255,12 @@ namespace TravelingSalesmanProblem
                         a.MinCount = item.MinCount;
                         a.MaxPrice = item.MaxPrice - prices[index];
                         a.MinPrice = item.MinPrice;
-                        if (a.MaxCount >= cities.Count) list1.Add(a);
+                        if (a.MaxCount >= cities.Count)
+                        {
+                            mutex.WaitOne();
+                            list1.Add(a);
+                            mutex.ReleaseMutex();
+                        }
 
                         var b = new BranchesAndBoundsPlan();
                         foreach (var pair in item.bools)
@@ -265,7 +272,12 @@ namespace TravelingSalesmanProblem
                         b.MinCount = item.MinCount + 1;
                         b.MaxPrice = item.MaxPrice;
                         b.MinPrice = item.MinPrice + prices[index];
-                        if (b.MinCount <= cities.Count) list1.Add(b);
+                        if (b.MinCount <= cities.Count)
+                        {
+                            mutex.WaitOne();
+                            list1.Add(b);
+                            mutex.ReleaseMutex();
+                        }
                     }
                 });
                 list = list1.Where(i => i.MinPrice <= foundPrice).ToList();
@@ -277,6 +289,93 @@ namespace TravelingSalesmanProblem
                 dataGridView1[3, index].Value = z.bools.ContainsKey(index) && z.bools[index];
             }
             UpdateTotal();
+            SystemSounds.Beep.Play();
+        }
+        /// <summary>
+        /// Метод поска с возвратом
+        /// При поиске не добавляются в стек плохие направления
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void branchesAndBoundsAndReturn_Click(object sender, EventArgs e)
+        {
+            var count = dataGridView1.Rows.Count;
+            var sources = new string[count];
+            var destinations = new string[count];
+            var prices = new double[count];
+            var cities = new List<string>();
+            for (var index = 0; index < count; index++)
+            {
+                sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
+                destinations[index] = Convert.ToString(dataGridView1[1, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[2, index].EditedFormattedValue);
+                cities.Add(sources[index]);
+                cities.Add(destinations[index]);
+            }
+            cities = cities.Distinct().ToList();
+
+            var stack = new Stack<BranchesAndBoundsPlan>();
+            var zero = new BranchesAndBoundsPlan();
+            zero.MinCount = 0;
+            zero.MaxCount = count;
+            zero.MinPrice = 0;
+            zero.MaxPrice = prices.Sum();
+            stack.Push(zero);
+            var foundPrice = double.MaxValue;
+            var foundPlan = zero;
+            while (stack.Any())
+            {
+                var item = stack.Pop();
+                do
+                {
+                    if (item.bools.Count == count)
+                    {
+                        var s = new List<string>();
+                        var d = new List<string>();
+
+                        for (var j = 0; j < count; j++)
+                        {
+                            if (item.bools.ContainsKey(j) && item.bools[j])
+                            {
+                                s.Add(sources[j]);
+                                d.Add(destinations[j]);
+                            }
+                        }
+                        if (item.MaxPrice <= foundPrice && s.Count == cities.Count && IsCyclic(s, d))
+                        {
+                            foundPrice = item.MaxPrice;
+                            foundPlan = item;
+                        }
+                        item = null;
+                    }
+                    else
+                    {
+                        var b = new BranchesAndBoundsPlan();
+                        foreach (var pair in item.bools)
+                        {
+                            b.bools.Add(pair.Key, pair.Value);
+                        }
+                        var index = b.bools.Count;
+                        b.bools.Add(index, true);
+                        b.MaxCount = item.MaxCount;
+                        b.MinCount = item.MinCount + 1;
+                        b.MaxPrice = item.MaxPrice;
+                        b.MinPrice = item.MinPrice + prices[index];
+                        if (b.MaxCount >= cities.Count && b.MinPrice <= foundPrice) stack.Push(b); // отсечение границей
+
+                        index = item.bools.Count;
+                        item.bools.Add(index, false);
+                        item.MaxCount -= 1;
+                        item.MaxPrice -= prices[index];
+                    }
+                } while (item != null);
+            }
+            for (var index = 0; index < count; index++)
+            {
+                dataGridView1[3, index].Value = foundPlan.bools[index];
+            }
+            UpdateTotal();
+            SystemSounds.Beep.Play();
         }
     }
 }

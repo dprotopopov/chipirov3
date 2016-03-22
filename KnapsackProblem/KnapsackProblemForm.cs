@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -77,7 +78,7 @@ namespace KnapsackProblem
         }
 
         /// <summary>
-        /// Нахождение решения полным перебором
+        ///     Нахождение решения полным перебором
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -132,10 +133,11 @@ namespace KnapsackProblem
                 dataGridView1[2, index].Value = ((foundIndex & 1) == 1);
             }
             UpdateTotal();
+            SystemSounds.Beep.Play();
         }
 
         /// <summary>
-        /// Добавление одного предмета указанного веса и цены
+        ///     Добавление одного предмета указанного веса и цены
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -145,9 +147,14 @@ namespace KnapsackProblem
             dataGridView1.Rows.Add(array);
         }
 
+        /// <summary>
+        /// Метод ветвей и границ
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void branchesAndBounds_Click(object sender, EventArgs e)
         {
-            var capacity = (double)numericUpDownCapacity.Value;
+            var capacity = (double) numericUpDownCapacity.Value;
             var weights = new double[dataGridView1.Rows.Count];
             var prices = new double[dataGridView1.Rows.Count];
             var foundPrice = 0.0;
@@ -206,7 +213,77 @@ namespace KnapsackProblem
                 dataGridView1[2, index].Value = z.bools[index];
             }
             UpdateTotal();
+            SystemSounds.Beep.Play();
+        }
+        /// <summary>
+        /// Метод поска с возвратом
+        /// При поиске не добавляются в стек плохие направления
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void branchesAndBoundsAndReturn_Click(object sender, EventArgs e)
+        {
+            var capacity = (double) numericUpDownCapacity.Value;
+            var weights = new double[dataGridView1.Rows.Count];
+            var prices = new double[dataGridView1.Rows.Count];
 
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                weights[index] = Convert.ToDouble(dataGridView1[0, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[1, index].EditedFormattedValue);
+            }
+
+            var stack = new Stack<BranchesAndBoundsPlan>();
+            var zero = new BranchesAndBoundsPlan();
+            zero.MinWeight = 0;
+            zero.MinPrice = 0;
+            zero.MaxWeight = weights.Sum();
+            zero.MaxPrice = prices.Sum();
+            stack.Push(zero);
+            var foundPrice = 0.0;
+            var foundPlan = zero;
+            while (stack.Any())
+            {
+                var item = stack.Pop();
+                do
+                {
+                    if (item.bools.Count == dataGridView1.Rows.Count)
+                    {
+                        if (item.MinPrice > foundPrice && item.MaxWeight < capacity)
+                        {
+                            foundPrice = item.MinPrice;
+                            foundPlan = item;
+                        }
+                        item = null;
+                    }
+                    else
+                    {
+                        var b = new BranchesAndBoundsPlan();
+                        foreach (var pair in item.bools)
+                        {
+                            b.bools.Add(pair.Key, pair.Value);
+                        }
+                        var index = b.bools.Count;
+                        b.bools.Add(index, true);
+                        b.MaxWeight = item.MaxWeight;
+                        b.MaxPrice = item.MaxPrice;
+                        b.MinWeight = item.MinWeight + weights[index];
+                        b.MinPrice = item.MinPrice + prices[index];
+                        if (b.MaxPrice >= foundPrice && b.MinWeight < capacity) stack.Push(b); // отсечение границей
+
+                        index = item.bools.Count;
+                        item.bools.Add(index, false);
+                        item.MaxWeight = item.MaxWeight - weights[index];
+                        item.MaxPrice -= prices[index];
+                    }
+                } while (item != null);
+            }
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                dataGridView1[2, index].Value = foundPlan.bools[index];
+            }
+            UpdateTotal();
+            SystemSounds.Beep.Play();
         }
     }
 }

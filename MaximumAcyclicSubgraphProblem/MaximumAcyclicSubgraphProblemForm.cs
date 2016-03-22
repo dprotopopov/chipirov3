@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -156,6 +157,7 @@ namespace MaximumAcyclicSubgraphProblem
                 dataGridView1[3, index].Value = ((foundIndex & 1) == 1);
             }
             UpdateTotal();
+            SystemSounds.Beep.Play();
         }
 
         /// <summary>
@@ -169,6 +171,11 @@ namespace MaximumAcyclicSubgraphProblem
             dataGridView1.Rows.Add(array);
         }
 
+        /// <summary>
+        /// Метод ветвей и границ
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void branchesAndBounds_Click(object sender, EventArgs e)
         {
             var sources = new string[dataGridView1.Rows.Count];
@@ -245,6 +252,82 @@ namespace MaximumAcyclicSubgraphProblem
                 dataGridView1[3, index].Value = z.bools.ContainsKey(index) && z.bools[index];
             }
             UpdateTotal();
+            SystemSounds.Beep.Play();
+        }
+        /// <summary>
+        /// Метод поска с возвратом
+        /// При поиске не добавляются в стек плохие направления
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void branchesAndBoundsAndReturn_Click(object sender, EventArgs e)
+        {
+            var sources = new string[dataGridView1.Rows.Count];
+            var destinations = new string[dataGridView1.Rows.Count];
+            var prices = new double[dataGridView1.Rows.Count];
+
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
+                destinations[index] = Convert.ToString(dataGridView1[1, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[2, index].EditedFormattedValue);
+            }
+
+            var stack = new Stack<BranchesAndBoundsPlan>();
+            var zero = new BranchesAndBoundsPlan();
+            zero.MinPrice = 0;
+            zero.MaxPrice = prices.Sum();
+            stack.Push(zero);
+            var foundPrice = double.MaxValue;
+            var foundPlan = zero;
+            while (stack.Any())
+            {
+                var item = stack.Pop();
+                do
+                {
+                    if (item.bools.Count == dataGridView1.Rows.Count)
+                    {
+                        var s = new List<string>();
+                        var d = new List<string>();
+
+                        for (var j = 0; j < dataGridView1.Rows.Count; j++)
+                        {
+                            if (item.bools.ContainsKey(j) && item.bools[j]) continue;
+                            s.Add(sources[j]);
+                            d.Add(destinations[j]);
+                        }
+                        if (item.MaxPrice < foundPrice && IsAcyclic(s, d))
+                        {
+                            foundPrice = item.MaxPrice;
+                            foundPlan = item;
+                        }
+                        item = null;
+                    }
+                    else
+                    {
+                        var b = new BranchesAndBoundsPlan();
+                        foreach (var pair in item.bools)
+                        {
+                            b.bools.Add(pair.Key, pair.Value);
+                        }
+                        var index = b.bools.Count;
+                        b.bools.Add(index, true);
+                        b.MaxPrice = item.MaxPrice;
+                        b.MinPrice = item.MinPrice + prices[index];
+                        if (b.MinPrice <= foundPrice) stack.Push(b); // отсечение границей
+
+                        index = item.bools.Count;
+                        item.bools.Add(index, false);
+                        item.MaxPrice -= prices[index];
+                    }
+                } while (item != null);
+            }
+            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            {
+                dataGridView1[3, index].Value = foundPlan.bools[index];
+            }
+            UpdateTotal();
+            SystemSounds.Beep.Play();
         }
     }
 }
