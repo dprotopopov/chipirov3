@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Media;
@@ -148,7 +149,7 @@ namespace KnapsackProblem
         }
 
         /// <summary>
-        /// Метод ветвей и границ
+        ///     Метод ветвей и границ
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -215,9 +216,10 @@ namespace KnapsackProblem
             UpdateTotal();
             SystemSounds.Beep.Play();
         }
+
         /// <summary>
-        /// Метод поска с возвратом
-        /// При поиске не добавляются в стек плохие направления
+        ///     Метод поска с возвратом
+        ///     При поиске не добавляются в стек плохие направления
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -281,6 +283,46 @@ namespace KnapsackProblem
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
                 dataGridView1[2, index].Value = foundPlan.bools[index];
+            }
+            UpdateTotal();
+            SystemSounds.Beep.Play();
+        }
+
+        private void DynaPro_Click(object sender, EventArgs e)
+        {
+            var count = dataGridView1.Rows.Count;
+            var capacity = (int) numericUpDownCapacity.Value;
+            var weights = new int[count];
+            var prices = new double[count];
+
+            for (var index = 0; index < count; index++)
+            {
+                weights[index] = Convert.ToInt32(dataGridView1[0, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[1, index].EditedFormattedValue);
+            }
+
+
+            // алгоритм Беллмана
+            var m = new double[count + 1, capacity + 1]; 
+            for (var j = 0; j <= capacity; j++)
+                m[0, j] = 0;
+
+            for (var i = 1; i <= count; i++)
+                for (var j = 1; j <= capacity; j++)
+                    if (weights[i - 1] > j)
+                    {
+                        m[i, j] = m[i - 1, j];
+                    }
+                    else
+                    {
+                        m[i, j] = Math.Max(m[i - 1, j], m[i - 1, j - weights[i - 1]] + prices[i - 1]);
+                    }
+
+            MessageBox.Show(m[count, capacity].ToString(CultureInfo.InvariantCulture));
+
+            for (var index = 0; index < count; index++)
+            {
+                dataGridView1[2, index].Value = false;
             }
             UpdateTotal();
             SystemSounds.Beep.Play();
