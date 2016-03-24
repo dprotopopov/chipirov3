@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Media;
@@ -288,7 +287,7 @@ namespace KnapsackProblem
             SystemSounds.Beep.Play();
         }
 
-        private void DynaPro_Click(object sender, EventArgs e)
+        private void dynaPro_Click(object sender, EventArgs e)
         {
             var count = dataGridView1.Rows.Count;
             var capacity = (int) numericUpDownCapacity.Value;
@@ -303,26 +302,34 @@ namespace KnapsackProblem
 
 
             // алгоритм Беллмана
-            var m = new double[count + 1, capacity + 1]; 
+            var m = new double[count + 1, capacity + 1];
+            var x = new long[count + 1, capacity + 1];
             for (var j = 0; j <= capacity; j++)
+            {
                 m[0, j] = 0;
-
+                x[0, j] = 0;
+            }
             for (var i = 1; i <= count; i++)
                 for (var j = 1; j <= capacity; j++)
                     if (weights[i - 1] > j)
                     {
                         m[i, j] = m[i - 1, j];
+                        x[i, j] = x[i - 1, j];
+                    }
+                    else if (m[i - 1, j] > m[i - 1, j - weights[i - 1]] + prices[i - 1])
+                    {
+                        m[i, j] = m[i - 1, j];
+                        x[i, j] = x[i - 1, j];
                     }
                     else
                     {
-                        m[i, j] = Math.Max(m[i - 1, j], m[i - 1, j - weights[i - 1]] + prices[i - 1]);
+                        m[i, j] = m[i - 1, j - weights[i - 1]] + prices[i - 1];
+                        x[i, j] = x[i - 1, j - weights[i - 1]] + (1L << (i - 1));
                     }
-
-            MessageBox.Show(m[count, capacity].ToString(CultureInfo.InvariantCulture));
 
             for (var index = 0; index < count; index++)
             {
-                dataGridView1[2, index].Value = false;
+                dataGridView1[2, index].Value = (((x[count, capacity] >> index) & 1L) == 1L);
             }
             UpdateTotal();
             SystemSounds.Beep.Play();

@@ -280,7 +280,7 @@
             this.button7.TabIndex = 18;
             this.button7.Text = "Динамическое программирование";
             this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.DynaPro_Click);
+            this.button7.Click += new System.EventHandler(this.dynaPro_Click);
             // 
             // KnapsackProblemForm
             // 
