@@ -377,5 +377,48 @@ namespace TravelingSalesmanProblem
             UpdateTotal();
             SystemSounds.Beep.Play();
         }
+
+        private void dynaPro_Click(object sender, EventArgs e)
+        {
+            var count = dataGridView1.Rows.Count;
+            var sources = new string[count];
+            var destinations = new string[count];
+            var prices = new double[count];
+            var cities = new List<string>();
+            for (var index = 0; index < count; index++)
+            {
+                sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
+                destinations[index] = Convert.ToString(dataGridView1[1, index].EditedFormattedValue);
+                prices[index] = Convert.ToDouble(dataGridView1[2, index].EditedFormattedValue);
+                cities.Add(sources[index]);
+                cities.Add(destinations[index]);
+            }
+            cities = cities.Distinct().ToList();
+
+            var vertics = Enumerable.Range(0, cities.Count).ToArray();
+            var matrix = new double[cities.Count, cities.Count];
+
+            for (var i = 0; i < cities.Count; i++)
+                for (var j = 0; j < cities.Count; j++)
+                    if (i == j)
+                        matrix[i, j] = 0;
+                    else
+                    {
+                        matrix[i, j] = 1000000;
+                    }
+
+            for (var index = 0; index < count; index++)
+            {
+                matrix[cities.IndexOf(sources[index]), cities.IndexOf(destinations[index])] = prices[index];
+            }
+
+            // Held–Karp algorithm
+            var DynamicProgramming = new DynamicProgramming(vertics, matrix);
+            double cost;
+            IEnumerable<int> route = DynamicProgramming.Solve(out cost);
+            MessageBox.Show(string.Join("->", route.Select(i => cities[i]))+"\n"+cost.ToString());
+
+        }
+
     }
 }

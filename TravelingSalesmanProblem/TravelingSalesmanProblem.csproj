@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BranchesAndBoundsPlan.cs" />
+    <Compile Include="DynamicProgramming.cs" />
     <Compile Include="TravelingSalesmanProblemForm.cs">
       <SubType>Form</SubType>
     </Compile>
