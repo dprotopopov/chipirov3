@@ -47,6 +47,7 @@
             this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
             this.button5 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
+            this.button7 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
@@ -101,9 +102,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(984, 44);
+            this.button1.Location = new System.Drawing.Point(974, 44);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(120, 37);
+            this.button1.Size = new System.Drawing.Size(130, 37);
             this.button1.TabIndex = 5;
             this.button1.Text = "Загрузить";
             this.button1.UseVisualStyleBackColor = true;
@@ -111,9 +112,9 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(984, 89);
+            this.button2.Location = new System.Drawing.Point(974, 89);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(120, 37);
+            this.button2.Size = new System.Drawing.Size(130, 37);
             this.button2.TabIndex = 6;
             this.button2.Text = "Сохранить";
             this.button2.UseVisualStyleBackColor = true;
@@ -155,9 +156,9 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(984, 181);
+            this.button3.Location = new System.Drawing.Point(974, 181);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(120, 75);
+            this.button3.Size = new System.Drawing.Size(130, 75);
             this.button3.TabIndex = 12;
             this.button3.Text = "Полный перебор";
             this.button3.UseVisualStyleBackColor = true;
@@ -202,9 +203,9 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(984, 262);
+            this.button5.Location = new System.Drawing.Point(974, 262);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(120, 75);
+            this.button5.Size = new System.Drawing.Size(130, 75);
             this.button5.TabIndex = 19;
             this.button5.Text = "Ветви и границы";
             this.button5.UseVisualStyleBackColor = true;
@@ -212,19 +213,30 @@
             // 
             // button6
             // 
-            this.button6.Location = new System.Drawing.Point(984, 343);
+            this.button6.Location = new System.Drawing.Point(974, 343);
             this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(120, 75);
+            this.button6.Size = new System.Drawing.Size(130, 75);
             this.button6.TabIndex = 20;
             this.button6.Text = "Ветви и границы с возвратом";
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.branchesAndBoundsAndReturn_Click);
+            // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(974, 424);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(130, 75);
+            this.button7.TabIndex = 21;
+            this.button7.Text = "Динамическое программирование";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.dynaPro_Click);
             // 
             // MaximumAcyclicSubgraphProblemForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1149, 565);
+            this.Controls.Add(this.button7);
             this.Controls.Add(this.button6);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.numericUpDown2);
@@ -271,6 +283,7 @@
         private System.Windows.Forms.NumericUpDown numericUpDown2;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Button button7;
     }
 }
 

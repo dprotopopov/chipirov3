@@ -250,7 +250,7 @@ namespace KnapsackProblem
                 {
                     if (item.bools.Count == dataGridView1.Rows.Count)
                     {
-                        if (item.MinPrice > foundPrice && item.MaxWeight < capacity)
+                        if (item.MinPrice >= foundPrice && item.MaxWeight <= capacity)
                         {
                             foundPrice = item.MinPrice;
                             foundPlan = item;
@@ -270,7 +270,7 @@ namespace KnapsackProblem
                         b.MaxPrice = item.MaxPrice;
                         b.MinWeight = item.MinWeight + weights[index];
                         b.MinPrice = item.MinPrice + prices[index];
-                        if (b.MaxPrice >= foundPrice && b.MinWeight < capacity) stack.Push(b); // отсечение границей
+                        if (b.MaxPrice >= foundPrice && b.MinWeight <= capacity) stack.Push(b); // отсечение границей
 
                         index = item.bools.Count;
                         item.bools.Add(index, false);

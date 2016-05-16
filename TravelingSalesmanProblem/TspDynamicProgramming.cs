@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace TravelingSalesmanProblem
 {
-    public class DynamicProgramming
+    public class TspDynamicProgramming
     {
         private class Node
         {
@@ -21,7 +21,7 @@ namespace TravelingSalesmanProblem
 
         #region Constructor
 
-        public DynamicProgramming(IEnumerable<int> vertices, double[,] matrix)
+        public TspDynamicProgramming(IEnumerable<int> vertices, double[,] matrix)
         {
             _vertices = vertices;
             _adjacencyMatrix = matrix;

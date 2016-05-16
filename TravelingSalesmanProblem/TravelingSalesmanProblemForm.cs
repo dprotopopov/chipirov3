@@ -413,7 +413,7 @@ namespace TravelingSalesmanProblem
             }
 
             // Held–Karp algorithm
-            var DynamicProgramming = new DynamicProgramming(vertics, matrix);
+            var DynamicProgramming = new TspDynamicProgramming(vertics, matrix);
             double cost;
             IEnumerable<int> route = DynamicProgramming.Solve(out cost);
             MessageBox.Show(string.Join("->", route.Select(i => cities[i]))+"\n"+cost.ToString());
