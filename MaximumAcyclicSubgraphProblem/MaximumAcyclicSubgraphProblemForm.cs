@@ -172,7 +172,7 @@ namespace MaximumAcyclicSubgraphProblem
         }
 
         /// <summary>
-        /// Метод ветвей и границ
+        ///     Метод ветвей и границ
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -195,7 +195,7 @@ namespace MaximumAcyclicSubgraphProblem
             zero.MinPrice = 0;
             zero.MaxPrice = prices.Sum();
             list.Add(zero);
-            for (var index = 0; index < dataGridView1.Rows.Count; index++)
+            for (var index = 0; index <= dataGridView1.Rows.Count; index++)
             {
                 var list1 = new List<BranchesAndBoundsPlan>();
                 Parallel.ForEach(list, item =>
@@ -211,42 +211,37 @@ namespace MaximumAcyclicSubgraphProblem
                     }
                     if (IsAcyclic(s, d))
                     {
-                        var price = 0.0;
-                        for (var j = 0; j < dataGridView1.Rows.Count; j++)
-                            if (item.bools.ContainsKey(j) && item.bools[j])
-                                price += prices[j];
                         mutex.WaitOne();
+                        var price = item.bools.Where(pair => pair.Value).Sum(pair => prices[pair.Key]);
                         foundPrice = Math.Min(foundPrice, price);
-                        mutex.ReleaseMutex();
                         list2.Add(item);
+                        mutex.ReleaseMutex();
                     }
-                    else
+                    else if (index < dataGridView1.Rows.Count)
                     {
                         var a = new BranchesAndBoundsPlan();
+                        var b = new BranchesAndBoundsPlan();
                         foreach (var pair in item.bools)
                         {
                             a.bools.Add(pair.Key, pair.Value);
+                            b.bools.Add(pair.Key, pair.Value);
                         }
                         a.bools.Add(index, false);
                         a.MaxPrice = item.MaxPrice - prices[index];
                         a.MinPrice = item.MinPrice;
-                        list1.Add(a);
 
-                        var b = new BranchesAndBoundsPlan();
-                        foreach (var pair in item.bools)
-                        {
-                            b.bools.Add(pair.Key, pair.Value);
-                        }
                         b.bools.Add(index, true);
                         b.MaxPrice = item.MaxPrice;
                         b.MinPrice = item.MinPrice + prices[index];
+
+                        list1.Add(a);
                         list1.Add(b);
                     }
                 });
-                list = list1.Where(i => i.MinPrice <= foundPrice).ToList();
+                list = list1.Where(i => i.MinPrice <= foundPrice + 0.0001).ToList();
             }
             if (!list2.Any()) return;
-            var z = list2.First(i => Math.Abs(i.MinPrice - foundPrice) < 0.001);
+            var z = list2.First(i => Math.Abs(i.MinPrice - foundPrice) < 0.0001);
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
                 dataGridView1[3, index].Value = z.bools.ContainsKey(index) && z.bools[index];
@@ -254,9 +249,10 @@ namespace MaximumAcyclicSubgraphProblem
             UpdateTotal();
             SystemSounds.Beep.Play();
         }
+
         /// <summary>
-        /// Метод поска с возвратом
-        /// При поиске не добавляются в стек плохие направления
+        ///     Метод поска с возвратом
+        ///     При поиске не добавляются в стек плохие направления
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -313,7 +309,7 @@ namespace MaximumAcyclicSubgraphProblem
                         var index = b.bools.Count;
                         b.bools.Add(index, true);
                         b.MaxPrice = item.MaxPrice;
-                        b.MinPrice = item.MinPrice + prices[index];
+                        b.MinPrice += prices[index];
                         if (b.MinPrice <= foundPrice) stack.Push(b); // отсечение границей
 
                         index = item.bools.Count;
@@ -352,14 +348,12 @@ namespace MaximumAcyclicSubgraphProblem
 
             for (var i = 0; i < cities.Count; i++)
                 for (var j = 0; j < cities.Count; j++)
-                        matrix[i, j] = 0;
+                    matrix[i, j] = 0;
 
             for (var index = 0; index < count; index++)
             {
                 matrix[cities.IndexOf(sources[index]), cities.IndexOf(destinations[index])] = prices[index];
             }
-
-
         }
     }
 }

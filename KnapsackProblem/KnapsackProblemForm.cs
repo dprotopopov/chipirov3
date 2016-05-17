@@ -171,41 +171,51 @@ namespace KnapsackProblem
             zero.MinPrice = 0;
             zero.MaxWeight = weights.Sum();
             zero.MaxPrice = prices.Sum();
+            textBox1.Text += string.Format("Инициализация {0}\n", zero.ToString());
             list.Add(zero);
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
                 foundPrice = list.Select(i => i.MinPrice).Max();
                 var list1 = new List<BranchesAndBoundsPlan>();
+                textBox1.Text += string.Format("Добавление в список\n");
                 Parallel.ForEach(list, item =>
                 {
                     var a = new BranchesAndBoundsPlan();
+                    var b = new BranchesAndBoundsPlan();
                     foreach (var pair in item.bools)
                     {
                         a.bools.Add(pair.Key, pair.Value);
+                        b.bools.Add(pair.Key, pair.Value);
                     }
                     a.bools.Add(index, false);
+                    b.bools.Add(index, true);
+
                     a.MaxWeight = item.MaxWeight - weights[index];
                     a.MaxPrice = item.MaxPrice - prices[index];
                     a.MinWeight = item.MinWeight;
                     a.MinPrice = item.MinPrice;
-                    if (a.MaxPrice >= foundPrice) list1.Add(a);
 
-                    var b = new BranchesAndBoundsPlan();
-                    foreach (var pair in item.bools)
-                    {
-                        b.bools.Add(pair.Key, pair.Value);
-                    }
-                    b.bools.Add(index, true);
                     b.MaxWeight = item.MaxWeight;
                     b.MaxPrice = item.MaxPrice;
                     b.MinWeight = item.MinWeight + weights[index];
                     b.MinPrice = item.MinPrice + prices[index];
-                    if (b.MinWeight <= capacity) list1.Add(b);
+
+                    if (a.MaxPrice >= foundPrice)
+                    {
+                        list1.Add(a);
+                    }
+                    if (b.MinWeight <= capacity)
+                    {
+                        list1.Add(b);
+                    }
                 });
+                textBox1.Text += "Выбор из списка максимальной MinPrice\n";
                 foundPrice = list1.Select(i => i.MinPrice).Max();
+                textBox1.Text += "Удаление из списка элементов с маленькой MaxPrice\n";
                 list = list1.Where(i => i.MaxPrice >= foundPrice).ToList();
             }
             if (!list.Any()) return;
+            textBox1.Text += "Выбор из списка с максимальной MinPrice\n";
             foundPrice = list.Select(i => i.MinPrice).Max();
             var z = list.First(i => i.MinPrice == foundPrice);
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
@@ -240,12 +250,14 @@ namespace KnapsackProblem
             zero.MinPrice = 0;
             zero.MaxWeight = weights.Sum();
             zero.MaxPrice = prices.Sum();
+            textBox1.Text += string.Format("Инициализация стека {0}\n", zero.ToString());
             stack.Push(zero);
             var foundPrice = 0.0;
             var foundPlan = zero;
             while (stack.Any())
             {
                 var item = stack.Pop();
+                textBox1.Text += string.Format("Читаем из стека {0}\n", item);
                 do
                 {
                     if (item.bools.Count == dataGridView1.Rows.Count)
@@ -270,7 +282,11 @@ namespace KnapsackProblem
                         b.MaxPrice = item.MaxPrice;
                         b.MinWeight = item.MinWeight + weights[index];
                         b.MinPrice = item.MinPrice + prices[index];
-                        if (b.MaxPrice >= foundPrice && b.MinWeight <= capacity) stack.Push(b); // отсечение границей
+                        if (b.MaxPrice >= foundPrice && b.MinWeight <= capacity)
+                        {
+                            textBox1.Text += string.Format("Добавление в стек {0}\n", b.ToString()); 
+                            stack.Push(b); // отсечение границей                       
+                        }
 
                         index = item.bools.Count;
                         item.bools.Add(index, false);
