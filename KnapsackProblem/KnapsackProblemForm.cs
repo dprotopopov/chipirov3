@@ -97,14 +97,9 @@ namespace KnapsackProblem
                 prices[index] = Convert.ToDouble(dataGridView1[1, index].EditedFormattedValue);
             }
 
-            if (dataGridView1.Rows.Count > 30)
-            {
-                MessageBox.Show("Очень долго");
-                return;
-            }
 
             // Вычисляем параллельно для всех комбинаций элементов
-            Parallel.For(1L, 1L << dataGridView1.Rows.Count, bits =>
+            Parallel.For(0L, 1L << dataGridView1.Rows.Count, bits =>
             {
                 var weight = 0.0;
                 var price = 0.0;

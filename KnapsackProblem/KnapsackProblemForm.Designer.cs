@@ -285,10 +285,11 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(-2, 525);
+            this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.textBox1.Location = new System.Drawing.Point(0, 519);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(1153, 137);
+            this.textBox1.Size = new System.Drawing.Size(1149, 137);
             this.textBox1.TabIndex = 19;
             // 
             // KnapsackProblemForm

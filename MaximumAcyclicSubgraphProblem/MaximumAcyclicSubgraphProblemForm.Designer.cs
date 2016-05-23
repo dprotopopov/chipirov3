@@ -234,10 +234,11 @@
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(-3, 539);
+            this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.textBox1.Location = new System.Drawing.Point(0, 541);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(1153, 128);
+            this.textBox1.Size = new System.Drawing.Size(1149, 128);
             this.textBox1.TabIndex = 22;
             // 
             // MaximumAcyclicSubgraphProblemForm
