@@ -166,14 +166,14 @@ namespace KnapsackProblem
             zero.MinPrice = 0;
             zero.MaxWeight = weights.Sum();
             zero.MaxPrice = prices.Sum();
-            textBox1.Text += string.Format("Инициализация {0}\n", zero.ToString());
+            textBox1.Text += string.Format("Инициализация {0}\n", zero);
             list.Add(zero);
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
                 foundPrice = list.Select(i => i.MinPrice).Max();
                 var list1 = new List<BranchesAndBoundsPlan>();
-                textBox1.Text += string.Format("Добавление в список\n");
-                Parallel.ForEach(list, item =>
+                textBox1.Text += "Добавление в список\n";
+                foreach(var item in list)
                 {
                     var a = new BranchesAndBoundsPlan();
                     var b = new BranchesAndBoundsPlan();
@@ -203,7 +203,7 @@ namespace KnapsackProblem
                     {
                         list1.Add(b);
                     }
-                });
+                }
                 textBox1.Text += "Выбор из списка максимальной MinPrice\n";
                 foundPrice = list1.Select(i => i.MinPrice).Max();
                 textBox1.Text += "Удаление из списка элементов с маленькой MaxPrice\n";
@@ -245,7 +245,7 @@ namespace KnapsackProblem
             zero.MinPrice = 0;
             zero.MaxWeight = weights.Sum();
             zero.MaxPrice = prices.Sum();
-            textBox1.Text += string.Format("Инициализация стека {0}\n", zero.ToString());
+            textBox1.Text += string.Format("Инициализация стека {0}\n", zero);
             stack.Push(zero);
             var foundPrice = 0.0;
             var foundPlan = zero;
@@ -279,7 +279,7 @@ namespace KnapsackProblem
                         b.MinPrice = item.MinPrice + prices[index];
                         if (b.MaxPrice >= foundPrice && b.MinWeight <= capacity)
                         {
-                            textBox1.Text += string.Format("Добавление в стек {0}\n", b.ToString()); 
+                            textBox1.Text += string.Format("Добавление в стек {0}\n", b);
                             stack.Push(b); // отсечение границей                       
                         }
 

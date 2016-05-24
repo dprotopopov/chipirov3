@@ -185,14 +185,16 @@ namespace MaximumAcyclicSubgraphProblem
             }
             var list = new List<BranchesAndBoundsPlan>();
             var list2 = new List<BranchesAndBoundsPlan>();
-            var zero = new BranchesAndBoundsPlan();
-            zero.MinPrice = 0;
-            zero.MaxPrice = prices.Sum();
+            var zero = new BranchesAndBoundsPlan
+            {
+                MinPrice = 0,
+                MaxPrice = prices.Sum()
+            };
             list.Add(zero);
             for (var index = 0; index <= dataGridView1.Rows.Count; index++)
             {
                 var list1 = new List<BranchesAndBoundsPlan>();
-                Parallel.ForEach(list, item =>
+                foreach(var item in list)
                 {
                     var s = new List<string>();
                     var d = new List<string>();
@@ -231,7 +233,7 @@ namespace MaximumAcyclicSubgraphProblem
                         list1.Add(a);
                         list1.Add(b);
                     }
-                });
+                }
                 list = list1.Where(i => i.MinPrice <= foundPrice + 0.0001).ToList();
             }
             if (!list2.Any()) return;

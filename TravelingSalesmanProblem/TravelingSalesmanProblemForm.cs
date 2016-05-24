@@ -189,7 +189,6 @@ namespace TravelingSalesmanProblem
             var destinations = new string[count];
             var prices = new double[count];
             var foundPrice = double.MaxValue;
-            var mutex = new Mutex();
             var cities = new List<string>();
             for (var index = 0; index < count; index++)
             {
@@ -213,7 +212,7 @@ namespace TravelingSalesmanProblem
             for (var index = 0; index < count; index++)
             {
                 var list1 = new List<BranchesAndBoundsPlan>();
-                Parallel.ForEach(list, item =>
+                foreach (var item in list)
                 {
                     var s = new List<string>();
                     var d = new List<string>();
@@ -223,7 +222,7 @@ namespace TravelingSalesmanProblem
                         if (item.bools.ContainsKey(j) && item.bools[j])
                         {
                             s.Add(sources[j]);
-                            d.Add(destinations[j]);                           
+                            d.Add(destinations[j]);
                         }
                     }
                     if (s.Count == cities.Count && IsCyclic(s, d))
@@ -232,10 +231,8 @@ namespace TravelingSalesmanProblem
                         for (var j = 0; j < dataGridView1.Rows.Count; j++)
                             if (item.bools.ContainsKey(j) && item.bools[j])
                                 price += prices[j];
-                        mutex.WaitOne();
                         foundPrice = Math.Min(foundPrice, price);
                         list2.Add(item);
-                        mutex.ReleaseMutex();
                     }
                     else
                     {
@@ -251,9 +248,7 @@ namespace TravelingSalesmanProblem
                         a.MinPrice = item.MinPrice;
                         if (a.MaxCount >= cities.Count)
                         {
-                            mutex.WaitOne();
                             list1.Add(a);
-                            mutex.ReleaseMutex();
                         }
 
                         var b = new BranchesAndBoundsPlan();
@@ -268,12 +263,10 @@ namespace TravelingSalesmanProblem
                         b.MinPrice = item.MinPrice + prices[index];
                         if (b.MinCount <= cities.Count)
                         {
-                            mutex.WaitOne();
                             list1.Add(b);
-                            mutex.ReleaseMutex();
                         }
                     }
-                });
+                }
                 list = list1.Where(i => i.MinPrice <= foundPrice).ToList();
             }
             if (!list2.Any()) return;
@@ -285,9 +278,10 @@ namespace TravelingSalesmanProblem
             UpdateTotal();
             SystemSounds.Beep.Play();
         }
+
         /// <summary>
-        /// Метод поска с возвратом
-        /// При поиске не добавляются в стек плохие направления
+        ///     Метод поска с возвратом
+        ///     При поиске не добавляются в стек плохие направления
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -409,10 +403,8 @@ namespace TravelingSalesmanProblem
             // Held–Karp algorithm
             var DynamicProgramming = new TspDynamicProgramming(vertics, matrix);
             double cost;
-            IEnumerable<int> route = DynamicProgramming.Solve(out cost);
-            MessageBox.Show(string.Join("->", route.Select(i => cities[i]))+"\n"+cost.ToString());
-
+            var route = DynamicProgramming.Solve(out cost);
+            MessageBox.Show(string.Join("->", route.Select(i => cities[i])) + "\n" + cost);
         }
-
     }
 }
