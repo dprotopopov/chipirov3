@@ -176,7 +176,6 @@ namespace MaximumAcyclicSubgraphProblem
             var destinations = new string[dataGridView1.Rows.Count];
             var prices = new double[dataGridView1.Rows.Count];
             var foundPrice = double.MaxValue;
-            var mutex = new Mutex();
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
                 sources[index] = Convert.ToString(dataGridView1[0, index].EditedFormattedValue);
@@ -207,11 +206,9 @@ namespace MaximumAcyclicSubgraphProblem
                     }
                     if (IsAcyclic(s, d))
                     {
-                        mutex.WaitOne();
                         var price = item.bools.Where(pair => pair.Value).Sum(pair => prices[pair.Key]);
                         foundPrice = Math.Min(foundPrice, price);
                         list2.Add(item);
-                        mutex.ReleaseMutex();
                     }
                     else if (index < dataGridView1.Rows.Count)
                     {
@@ -232,11 +229,14 @@ namespace MaximumAcyclicSubgraphProblem
 
                         list1.Add(a);
                         list1.Add(b);
+                        textBox1.Text += string.Format("Memory: {0} items" + Environment.NewLine, list.Sum(i => 1 + i.bools.Count) + list1.Sum(i => 1 + i.bools.Count) + list2.Sum(i => 1 + i.bools.Count));
                     }
                 }
                 list = list1.Where(i => i.MinPrice <= foundPrice + 0.0001).ToList();
+                textBox1.Text += string.Format("Memory: {0} items" + Environment.NewLine, list.Sum(i => 1 + i.bools.Count) + list2.Sum(i => 1 + i.bools.Count));
             }
             if (!list2.Any()) return;
+            textBox1.Text += string.Format("Memory: {0} items" + Environment.NewLine, list2.Sum(i => 1 + i.bools.Count));
             var z = list2.First(i => Math.Abs(i.MinPrice - foundPrice) < 0.0001);
             for (var index = 0; index < dataGridView1.Rows.Count; index++)
             {
@@ -270,6 +270,7 @@ namespace MaximumAcyclicSubgraphProblem
             zero.MinPrice = 0;
             zero.MaxPrice = prices.Sum();
             stack.Push(zero);
+            textBox1.Text += string.Format("Memory: {0} items" + Environment.NewLine, stack.Sum(i => 1 + i.bools.Count));
             var foundPrice = double.MaxValue;
             var foundPlan = zero;
             while (stack.Any())
@@ -306,7 +307,11 @@ namespace MaximumAcyclicSubgraphProblem
                         b.bools.Add(index, true);
                         b.MaxPrice = item.MaxPrice;
                         b.MinPrice += prices[index];
-                        if (b.MinPrice <= foundPrice) stack.Push(b); // отсечение границей
+                        if (b.MinPrice <= foundPrice)
+                        {
+                            stack.Push(b); // отсечение границей
+                            textBox1.Text += string.Format("Memory: {0} items" + Environment.NewLine, stack.Sum(i => 1 + i.bools.Count));
+                        }
 
                         index = item.bools.Count;
                         item.bools.Add(index, false);

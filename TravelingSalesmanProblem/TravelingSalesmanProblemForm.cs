@@ -265,9 +265,11 @@ namespace TravelingSalesmanProblem
                         {
                             list1.Add(b);
                         }
+                        textBox3.Text += string.Format("Memory: {0} items"+Environment.NewLine, list.Sum(i => 1 + i.bools.Count) + list1.Sum(i => 1 + i.bools.Count));
                     }
                 }
                 list = list1.Where(i => i.MinPrice <= foundPrice).ToList();
+                textBox3.Text += string.Format("Memory: {0} items" + Environment.NewLine, list.Sum(i => 1 + i.bools.Count));
             }
             if (!list2.Any()) return;
             var z = list2.First(i => Math.Abs(i.MinPrice - foundPrice) < 0.001);
