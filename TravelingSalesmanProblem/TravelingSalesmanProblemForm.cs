@@ -209,7 +209,7 @@ namespace TravelingSalesmanProblem
                 MaxPrice = prices.Sum()
             };
             list.Add(zero);
-            for (var index = 0; index < count; index++)
+            for (var index = 0; index <= count; index++)
             {
                 var list1 = new List<BranchesAndBoundsPlan>();
                 foreach (var item in list)
@@ -234,7 +234,7 @@ namespace TravelingSalesmanProblem
                         foundPrice = Math.Min(foundPrice, price);
                         list2.Add(item);
                     }
-                    else
+                    else if(index<count)
                     {
                         var a = new BranchesAndBoundsPlan();
                         foreach (var pair in item.bools)
